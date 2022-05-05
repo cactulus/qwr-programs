@@ -1,0 +1,129 @@
+use "io";
+use "glfw";
+use "gl";
+use "glew";
+use "math";
+use "time";
+
+WINDOW_WIDTH :@ 400
+WINDOW_HEIGHT :@ 400
+WINDOW_TITLE :@ "Clock"
+
+RADIANS_IN_PERCENT :@ 0.062831853071796
+
+error :: (msg str) {
+    printf("%s\n", msg);
+    exit(1);
+}
+
+convert_percent_to_radians :: (percent f64) f64 {
+	return RADIANS_IN_PERCENT * (percent * 100.0);
+}
+
+draw_circle :: (radius f64, fill bool) {
+	tau := PI * 2.0;
+	am := 1000;
+	
+	if fill {
+		glBegin(GL_TRIANGLE_FAN);
+	} else {
+		glBegin(GL_LINE_LOOP);
+	}
+	
+	i := 0;
+	while i <= am {
+		angle := tau * (i as f64) / (am as f64);
+		x := radius * cos(angle);
+		y := radius * sin(angle);
+		glVertex2f(x, y);
+	
+		i += 1;
+	}
+	
+	glEnd();
+}
+
+draw_hand :: (width f64, percent f64, len f64) {
+	conv := convert_percent_to_radians(percent);
+	
+	glLineWidth(width);
+	
+	glBegin(GL_LINES);
+	
+	glVertex2f(0.0, 0.0);
+	x := len * sin(conv);
+	y := len * cos(conv);
+	glVertex2f(x, y);
+	
+	glEnd();
+}
+
+render :: () {
+	glDisable(GL_TEXTURE_2D);
+	glColor4f(1.0, 1.0, 1.0, 1.0);
+	
+	glPushMatrix();
+	glLineWidth(1.0);
+	// glTranslatef(0.5, 0.5, 0.0);
+	
+	clock_radius := 0.8;
+	
+	now := get_local_time();
+	seconds := now.second as f64;
+	minutes := now.minute as f64;
+	hours := now.hour as f64;
+
+	draw_hand(2.0, seconds / 60.0, clock_radius);
+	// Minutes
+	draw_hand(4.0, minutes / 60.0, clock_radius * 0.75);
+	// Hours
+	draw_hand(6.0, (hours % 12.0) / 12.0, clock_radius * 0.5);
+	
+	glLineWidth(1.0);
+	draw_circle(clock_radius, false);
+	draw_circle(0.05, true);
+	
+	glPopMatrix();
+}
+
+main :: () int {
+    if (!glfwInit()) {
+        error("Failed to initialize GLFW!");
+    }
+
+    window := glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_TITLE, nil, nil);
+    if (!window) {
+        glfwTerminate();
+    }
+	
+	glfwSwapInterval(1);
+	glfwShowWindow(window);
+
+    glfwMakeContextCurrent(window);
+	
+	if (glewInit() != GLEW_OK) {
+        glfwTerminate();
+		exit(1);
+	}
+
+    glShadeModel(GL_SMOOTH);
+	glDisable(GL_DEPTH_TEST);
+	glClearColor(0.0, 0.0, 0.0, 1.0);
+
+	glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
+
+
+    while (!glfwWindowShouldClose(window)) {
+        glClear(GL_COLOR_BUFFER_BIT);
+		glLoadIdentity();
+
+		render();
+		glFlush();
+		
+		glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+    glfwTerminate();
+    return 0; 
+}

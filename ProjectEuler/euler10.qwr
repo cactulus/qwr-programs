@@ -1,0 +1,36 @@
+use "io";
+use "time";
+
+is_prime :: (n int) bool {
+	i := 3;
+	while i * i <= n {
+		if n % i == 0
+			return false;
+		
+		i += 2;
+	}
+	
+	return true;
+}
+
+main :: () int {
+	start := clock();
+	sum: u64 = 5;
+	
+	i := 5;
+	target :@ 1000000; // 64 too small for 2 mil? changed to 1 mil for now
+	while i < target {
+		if is_prime(i)
+			sum += i;
+			
+		i += 2;
+	}
+	
+	end := clock();
+	diff := (end - start) as f64 / CLOCKS_PER_SEC;
+	
+    printf("The elapsed time is %f seconds\n", diff);
+	printf("%lld\n", sum);
+	
+	return 0;
+}
