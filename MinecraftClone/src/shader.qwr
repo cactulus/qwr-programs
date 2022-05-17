@@ -7,7 +7,7 @@ shader_load :: (path str, type GLenum) GLuint {
     src := read_entire_file(path);
 	compiled: GLint;
 
-	shader := PFNGLCREATESHADERPROC(type);
+	shader := glCreateShader(type);
 	glShaderSource(shader, 1, &src, nil);
 	
 	glCompileShader(shader);

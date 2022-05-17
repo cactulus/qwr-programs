@@ -1,6 +1,5 @@
 use "io";
 use "gl";
-use "glew";
 use "glfw";
 
 include "window";
@@ -17,11 +16,6 @@ main :: () int {
     }
 
     window := window_create();
-
-	if (glewInit() != GLEW_OK) {
-        window_destroy();
-		exit(1);
-	}
 
     window_set_viewport(window);
 
