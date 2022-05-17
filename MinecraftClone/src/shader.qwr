@@ -1,0 +1,39 @@
+use "gl";
+use "fio";
+
+typedef Shader GLuint; // program id
+
+shader_load :: (path str, type GLenum) GLuint {
+    src := read_entire_file(path);
+	compiled: GLint;
+
+	shader := PFNGLCREATESHADERPROC(type);
+	glShaderSource(shader, 1, &src, nil);
+	
+	glCompileShader(shader);
+	glGetShaderiv(shader, GL_COMPILE_STATUS, &compiled);
+
+	if (compiled != 1) {
+		printf("Failed to compile %s\n", path);
+        exit(1);
+	}
+
+	return shader;
+}
+
+shader_create :: (vert_path str, frag_path str) Shader {
+    vert_shader := shader_load(vert_path, GL_VERTEX_SHADER);
+    frag_shader := shader_load(frag_path, GL_FRAGMENT_SHADER);
+
+    program := glCreateProgram();
+	glAttachShader(program, vert_shader);
+	glAttachShader(program, frag_shader);
+
+	glLinkProgram(program);
+
+    return program;
+}
+
+shader_use :: (shader Shader) {
+    glUseProgram(shader);
+}

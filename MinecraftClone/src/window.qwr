@@ -1,0 +1,47 @@
+use "glfw";
+use "gl";
+
+WINDOW_TITLE :@ "Minecraft Clone";
+DEFAULT_WINDOW_WIDTH :@ 1280;
+DEFAULT_WINDOW_HEIGHT :@ 720;
+
+Window :: struct {
+    handle GLFWwindow,
+    width int,
+    height int
+}
+
+window_create :: () *Window {
+    window := new Window;
+
+    window.handle = glfwCreateWindow(DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT, WINDOW_TITLE, nil, nil);
+    window.width = DEFAULT_WINDOW_WIDTH;
+    window.height = DEFAULT_WINDOW_HEIGHT;
+
+    if (!window.handle) {
+        glfwTerminate();
+    }
+	
+	glfwShowWindow(window.handle);
+
+    glfwMakeContextCurrent(window.handle);
+
+    return window;
+}
+
+window_update :: (window *Window) {
+    glfwSwapBuffers(window.handle);
+    glfwPollEvents();
+}
+
+window_set_viewport :: (window *Window) {
+	glViewport(0, 0, window.width, window.height);
+}
+
+window_should_close :: (window *Window) bool {
+    return glfwWindowShouldClose(window.handle);
+}
+
+window_destroy :: () {
+    glfwTerminate();
+}

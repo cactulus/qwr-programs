@@ -1,0 +1,36 @@
+use "io";
+use "gl";
+use "glew";
+use "glfw";
+
+include "window";
+include "shader";
+
+error :: (msg str) {
+    printf("%s\n", msg);
+    exit(1);
+}
+
+main :: () int {
+    if (!glfwInit()) {
+        error("Failed to initialize GLFW!");
+    }
+
+    window := window_create();
+
+	if (glewInit() != GLEW_OK) {
+        window_destroy();
+		exit(1);
+	}
+
+    window_set_viewport(window);
+
+    while (!window_should_close(window)) {
+        glClear(GL_COLOR_BUFFER_BIT);
+		
+        window_update(window);
+    }
+
+    window_destroy();
+    return 0; 
+}
