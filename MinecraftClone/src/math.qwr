@@ -1,0 +1,158 @@
+use "math";
+use "memory";
+
+Vec3 :: struct {
+    x float,
+    y float,
+    z float
+}
+
+Mat4 :: struct {
+    values [16]float
+}
+
+vec3_create :: (x float, y float, z float) *Vec3 {
+    vec := new Vec3;
+    vec.x = x;
+    vec.y = y;
+    vec.z = z;
+    return vec;
+}
+
+vec3_create :: (v float) *Vec3 {
+    return vec3_create(v, v, v);
+}
+
+vec3_length :: (vec *Vec3) float {
+    using vec;
+    return sqrt(x * x + y * y + z * z);
+}
+
+vec3_normalize :: (vec *Vec3) *Vec3 {
+    len := vec3_length(vec);
+    x := vec.x;
+    y := vec.y;
+    z := vec.z;
+    return vec3_create(x / len, y / len, z / len);
+}
+
+vec3_cross :: (v1 *Vec3, v2 *Vec3) *Vec3 { 
+    x := v1.y * v2.z - v1.z * v2.y;
+    y := v1.z * v2.x - v1.x * v2.z;
+    z := v1.x * v2.y - v1.y * v2.x;
+    
+    return vec3_create(x, y, z);
+}
+
+vec3_addeq :: (v1 *Vec3, v2 *Vec3) {
+    v1.x += v2.x;
+    v1.y += v2.y;
+    v1.z += v2.z;
+}
+
+vec3_subeq :: (v1 *Vec3, v2 *Vec3) {
+    v1.x -= v2.x;
+    v1.y -= v2.y;
+    v1.z -= v2.z;
+}
+
+vec3_add :: (v1 *Vec3, v2 *Vec3) *Vec3 {
+    x := v1.x + v2.x;
+    y := v1.y + v2.y;
+    z := v1.z + v2.z;
+    return vec3_create(x, y, z);
+}
+
+vec3_sub :: (v1 *Vec3, v2 *Vec3) *Vec3 {
+    x := v1.x - v2.x;
+    y := v1.y - v2.y;
+    z := v1.z - v2.z;
+    return vec3_create(x, y, z);
+}
+
+vec3_dot :: (v1 *Vec3, v2 *Vec3) float {
+    return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z;
+}
+
+vec3_mul :: (v1 *Vec3, v2 *Vec3) *Vec3 {
+    x := v1.x * v2.x;
+    y := v1.y * v2.y;
+    z := v1.z * v2.z;
+    return vec3_create(x, y, z);
+}
+
+vec3_mul :: (v1 *Vec3, f float) *Vec3 {
+    x := v1.x * f;
+    y := v1.y * f;
+    z := v1.z * f;
+    return vec3_create(x, y, z);
+}
+
+mat4_identity :: () *Mat4 {
+    mat := new Mat4;
+    using mat;
+
+    memset(&values[0], 0, 16 * sizeof float);
+    values[0] = 1.0;
+    values[5] = 1.0;
+    values[10] = 1.0;
+    values[15] = 1.0;
+
+    return mat;
+}
+
+mat4_translation :: (x float, y float, z float) *Mat4 {
+    mat := mat4_identity();
+    using mat;
+
+    values[12] = x;
+    values[13] = y;
+    values[14] = z;
+
+    return mat;
+}
+
+mat4_perspective :: (fov float, width float, height float, near float, far float) *Mat4 {
+    mat := mat4_identity();
+    using mat;
+
+    tan_fov := tan(degree_to_radian(fov / 2.0));
+    aspect_ratio := width / height;
+
+    values[0] = 1.0 / (tan_fov * aspect_ratio);
+    values[5] = 1.0 / tan_fov;
+    values[10] = far / (far - near);
+    values[14] = (far * near) / (far - near);
+
+    return mat;
+}
+
+mat4_lookat :: (eye *Vec3, center *Vec3, up *Vec3) *Mat4 {
+    f := vec3_normalize(vec3_sub(center, eye));
+    u := vec3_normalize(up);
+    s := vec3_normalize(vec3_cross(f, u));
+    u = vec3_cross(s, f);
+
+    mat := mat4_identity();
+    using mat;
+    
+    values[0] = s.x;
+    values[1] = u.x;
+    values[2] = -f.x;
+
+
+    values[4] = s.y;
+    values[5] = u.y;
+    values[6] = -f.y;
+    
+
+    values[8] = s.z;
+    values[9] = u.z;
+    values[10] = -f.z;
+
+    values[12] = -vec3_dot(s, eye);
+    values[13] = -vec3_dot(u, eye);
+    values[14] = vec3_dot(f, eye);
+
+    return mat;
+}

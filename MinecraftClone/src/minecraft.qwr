@@ -2,12 +2,25 @@ use "io";
 use "gl";
 use "glfw";
 
+include "math";
 include "window";
 include "shader";
+include "texture";
+include "block";
+include "player";
+
+last_time: f64 = 0.0;
 
 error :: (msg str) {
     printf("%s\n", msg);
     exit(1);
+}
+
+check_gl_error :: () {
+    error := glGetError();
+    if error {
+        print(error);
+    }
 }
 
 main :: () int {
@@ -16,11 +29,45 @@ main :: () int {
     }
 
     window := window_create();
-
     window_set_viewport(window);
 
+    shader := shader_create("shaders/vert.glsl", "shaders/frag.glsl");
+    texture := texture_load("textures/dirt.png", GL_RGB);
+    model := block_model_create();
+
+    player := player_create();
+
+    proj_mat := mat4_perspective(90.0, window.width as float, window.height as float, 0.1, 100.0);
+    shader_use(shader);
+    shader_uniform_mat4(shader, "proj_mat", proj_mat);
+
+    block_model_bind(model);
+
+    glfwSetInputMode(window.handle, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    glEnable(GL_DEPTH_TEST);
+    
+    glActiveTexture(GL_TEXTURE0);
+    texture_bind(texture);
+
+    check_gl_error();
+
+    last_time = glfwGetTime();
+    mouse_x: f64;
+    mouse_y: f64;
+
+    glClearColor(0.45, 0.8, 1.0, 1.0);
     while (!window_should_close(window)) {
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        cur_time := glfwGetTime();
+        delta_time := cur_time - last_time;
+        last_time = cur_time;
+
+        glfwGetCursorPos(window.handle, &mouse_x, &mouse_y);
+        player_update(player, window.handle, shader, delta_time);
+        player_update_mouse(player, mouse_x, mouse_y);
+
+        block_model_draw(model);
 		
         window_update(window);
     }

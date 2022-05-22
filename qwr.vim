@@ -2,13 +2,14 @@ if exists("b:current_syntax")
   finish
 endif
 
-syntax keyword qwrKeyword return extern builtin as if else while for new delete enum struct use typedef qwr include
+syntax keyword qwrKeyword return extern builtin as if else while for new delete enum struct use typedef qwr include using sizeof
 syntax keyword qwrType void s8 s16 s32 s64 u8 u16 u32 u64 f16 f32 f64 int uint float bool char str ptr
 
 syntax keyword qwrBool true false
 syntax keyword qwrNil nil
 
 syntax region qwrString start=/\v"/ skip=/\v\\./ end=/\v"/
+syntax region qwrChar start=/\v'/ skip=/\v\\./ end=/\v'/
 
 syntax match qwrFunction "\v<\w*>(\s*::\s*)@="
 
@@ -24,6 +25,7 @@ syntax match qwrPrec "#[a-zA-Z]+"
 highlight def link qwrPrec Preproc
 highlight def link qwrKeyword Keyword
 highlight def link qwrString String
+highlight def link qwrChar Character
 highlight def link qwrType Type
 highlight def link qwrBool Boolean
 highlight def link qwrNil Type

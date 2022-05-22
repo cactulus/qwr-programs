@@ -1,0 +1,131 @@
+use "gl";
+
+VERTICES :@ {
+    -0.5, -0.5, -0.5,
+     0.5, -0.5, -0.5,
+     0.5,  0.5, -0.5,
+     0.5,  0.5, -0.5,
+    -0.5,  0.5, -0.5,
+    -0.5, -0.5, -0.5,
+
+    -0.5, -0.5,  0.5,
+     0.5, -0.5,  0.5,
+     0.5,  0.5,  0.5,
+     0.5,  0.5,  0.5,
+    -0.5,  0.5,  0.5,
+    -0.5, -0.5,  0.5,
+
+    -0.5,  0.5,  0.5,
+    -0.5,  0.5, -0.5,
+    -0.5, -0.5, -0.5,
+    -0.5, -0.5, -0.5,
+    -0.5, -0.5,  0.5,
+    -0.5,  0.5,  0.5,
+
+     0.5,  0.5,  0.5,
+     0.5,  0.5, -0.5,
+     0.5, -0.5, -0.5,
+     0.5, -0.5, -0.5,
+     0.5, -0.5,  0.5,
+     0.5,  0.5,  0.5,
+
+    -0.5, -0.5, -0.5,
+     0.5, -0.5, -0.5,
+     0.5, -0.5,  0.5,
+     0.5, -0.5,  0.5,
+    -0.5, -0.5,  0.5,
+    -0.5, -0.5, -0.5,
+
+    -0.5,  0.5, -0.5,
+     0.5,  0.5, -0.5,
+     0.5,  0.5,  0.5,
+     0.5,  0.5,  0.5,
+    -0.5,  0.5,  0.5,
+    -0.5,  0.5, -0.5,
+} []float;
+
+TEX_COORDS :@ {
+    0.0, 0.0,
+    1.0, 0.0,
+    1.0, 1.0,
+    1.0, 1.0,
+    0.0, 1.0,
+    0.0, 0.0,
+    0.0, 0.0,
+    1.0, 0.0,
+    1.0, 1.0,
+    1.0, 1.0,
+    0.0, 1.0,
+    0.0, 0.0,
+    1.0, 0.0,
+    1.0, 1.0,
+    0.0, 1.0,
+    0.0, 1.0,
+    0.0, 0.0,
+    1.0, 0.0,
+    1.0, 0.0,
+    1.0, 1.0,
+    0.0, 1.0,
+    0.0, 1.0,
+    0.0, 0.0,
+    1.0, 0.0,
+    0.0, 1.0,
+    1.0, 1.0,
+    1.0, 0.0,
+    1.0, 0.0,
+    0.0, 0.0,
+    0.0, 1.0,
+    0.0, 1.0,
+    1.0, 1.0,
+    1.0, 0.0,
+    1.0, 0.0,
+    0.0, 0.0,
+    0.0, 1.0
+} []float;
+
+BlockModel :: struct {
+    vao GLuint,
+    pos_vbo GLuint,
+    tex_vbo GLuint,
+}
+
+Blocks :: struct {
+    textures    [..]int,
+    x_positions [..]int,
+    y_positions [..]int,
+    z_positions [..]int,
+}
+
+block_model_create :: () *BlockModel {
+    model := new BlockModel;
+    using model;
+
+    glGenVertexArrays(1, &vao);
+    glBindVertexArray(vao);
+    glGenBuffers(1, &pos_vbo);
+    glGenBuffers(1, &tex_vbo);
+
+    glBindBuffer(GL_ARRAY_BUFFER, pos_vbo);
+    glBufferData(GL_ARRAY_BUFFER, len(VERTICES) * sizeof float, &VERTICES[0], GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ARRAY_BUFFER, tex_vbo);
+    glBufferData(GL_ARRAY_BUFFER, len(TEX_COORDS) * sizeof float, &TEX_COORDS[0], GL_STATIC_DRAW);
+
+    return model;
+}
+
+block_model_bind :: (model *BlockModel) {
+    using model;
+
+    glBindBuffer(GL_ARRAY_BUFFER, pos_vbo);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nil);
+    glEnableVertexAttribArray(0);
+
+    glBindBuffer(GL_ARRAY_BUFFER, tex_vbo);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, nil);
+    glEnableVertexAttribArray(1);
+}
+
+block_model_draw :: (model *BlockModel) {
+    glDrawArrays(GL_TRIANGLES, 0, 36);
+}

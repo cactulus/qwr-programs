@@ -1,0 +1,81 @@
+use "math";
+
+MOVE_SPEED :@ 2.0;
+SENSITIVITY :@ 0.1;
+
+last_mouse_x: f64 = 0.0;
+last_mouse_y: f64 = 0.0;
+
+Player :: struct {
+    pos *Vec3,
+    world_up *Vec3,
+    front *Vec3,
+    right *Vec3,
+    up *Vec3,
+
+    yaw f64,
+    pitch f64
+}
+
+player_create :: () *Player {
+    player := new Player;
+    using player;
+
+    pos = vec3_create(0.0, 0.0, 0.0);
+    world_up = vec3_create(0.0, 1.0, 0.0);
+    front = vec3_create(0.0, 0.0, -1.0);
+    right = vec3_normalize(vec3_cross(front, world_up));
+    up = vec3_normalize(vec3_cross(right, front));
+
+    yaw = -90.0;
+    pitch = 0.0;
+
+    return player;
+}
+
+player_update :: (player *Player, window GLFWwindow, shader Shader, delta_time f64) {
+    using player;
+
+    if glfwGetKey(window, GLFW_KEY_A) {
+        vec3_subeq(pos, vec3_mul(right, MOVE_SPEED * delta_time));
+    }
+
+    if glfwGetKey(window, GLFW_KEY_D) {
+        vec3_addeq(pos, vec3_mul(right, MOVE_SPEED * delta_time));
+    }
+
+    if glfwGetKey(window, GLFW_KEY_W) {
+        vec3_subeq(pos, vec3_mul(front, MOVE_SPEED * delta_time));
+    }
+
+    if glfwGetKey(window, GLFW_KEY_S) {
+        vec3_addeq(pos, vec3_mul(front, MOVE_SPEED * delta_time));
+    }
+
+    view_mat := mat4_lookat(pos, vec3_add(pos, front), up);
+    shader_uniform_mat4(shader, "view_mat", view_mat);
+}
+
+player_update_mouse :: (player *Player, mouse_x f64, mouse_y f64) {
+    mouse_x_delta := mouse_x - last_mouse_x;
+    mouse_y_delta := mouse_y - last_mouse_y;
+
+    last_mouse_x = mouse_x;
+    last_mouse_y = mouse_y;
+
+    using player;
+
+    yaw -= mouse_x_delta * SENSITIVITY;
+    pitch -= mouse_y_delta * SENSITIVITY;
+
+    yaw_rad := degree_to_radian(yaw);
+    pitch_rad := degree_to_radian(pitch);
+
+    xdir := cos(yaw_rad) * cos(pitch_rad);
+    ydir := sin(pitch_rad);
+    zdir := sin(yaw_rad) * cos(pitch_rad);
+
+    front = vec3_normalize(vec3_create(xdir, ydir, zdir));
+    right = vec3_normalize(vec3_cross(front, world_up));
+    up = vec3_normalize(vec3_cross(right, front));
+}

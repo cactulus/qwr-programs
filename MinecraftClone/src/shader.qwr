@@ -15,6 +15,13 @@ shader_load :: (path str, type GLenum) GLuint {
 
 	if (compiled != 1) {
 		printf("Failed to compile %s\n", path);
+
+        len := 0;
+        glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &len);
+        log := malloc(len) as str;
+        glGetShaderInfoLog(shader, len, nil, log);
+        print(log);
+    
         exit(1);
 	}
 
@@ -36,4 +43,9 @@ shader_create :: (vert_path str, frag_path str) Shader {
 
 shader_use :: (shader Shader) {
     glUseProgram(shader);
+}
+
+shader_uniform_mat4 :: (shader Shader, uniform_name str, matrix *Mat4) {
+    loc := glGetUniformLocation(shader, uniform_name);
+    glUniformMatrix4fv(loc, 1, GL_FALSE, &matrix.values[0]);
 }
